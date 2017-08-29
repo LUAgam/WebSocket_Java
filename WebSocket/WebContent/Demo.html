@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>117-119聊天室</title>
+</head>
+<body>
+	<div>
+		<label for="name">请输入名称：</label> <input type="text" id="name" name="name"> <input type="button" id="btnConnection" value="连接" /> <input type="button" id="btnClose" value="关闭" />
+		<div id="message"></div>
+		<input type="text" id="content"><input type="button" id="btnSend" value="发送" />
+	</div>
+	<script src="jquery-2.0.3.min.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		var socket;
+		if (typeof (WebSocket) == "undefined") {
+			alert("您的浏览器不支持WebSocket");
+		}
+
+		$("#btnConnection").click(function() {
+			var name = encodeURI(encodeURI($("#name").val()));
+			//实现化WebSocket对象，指定要连接的服务器地址与端口
+			socket = new WebSocket("ws://127.0.0.1:8080/WebSocket/ws/" + name);
+			//打开事件
+			socket.onopen = function() {
+				setMessageInnerHTML("Socket已打开");
+				//socket.send("这是来自客户端的消息" + location.href + new Date());
+			};
+			//获得消息事件
+			socket.onmessage = function(msg) {
+				setMessageInnerHTML(msg.data);
+			};
+			//关闭事件
+			socket.onclose = function() {
+				setMessageInnerHTML("Socket已关闭");
+			};
+			//发生了错误事件
+			socket.onerror = function() {
+				setMessageInnerHTML("发生了错误");
+			}
+		});
+
+		window.onbeforeunload = function() {
+			socket.close();
+		}
+
+		//发送消息
+		$("#btnSend").click(function() {
+			socket.send($('#content').val());
+		});
+
+		//关闭
+		$("#btnClose").click(function() {
+			socket.close();
+		});
+
+		//将消息显示在网页上
+		function setMessageInnerHTML(msg) {
+			$('#message').html($('#message').html() + '<br/>' + msg);
+			$('#content').val("");
+		}
+	</script>
+</body>
+
+</html>
